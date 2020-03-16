@@ -48,6 +48,10 @@ While it can play almost every game, it has quiet some shortcomings.
 - Gyro - V/B/N/M
 - A+B+Start+Select(Reset) - R
 
+# Bios
+Opensource Bios from Normmatt is included, however it has issues with some games.
+Original GBA BIOS can be used to replace the gba_bios.bin
+
 # Accuracy
 
 (Status 03.02.2020)
