@@ -139,6 +139,8 @@ namespace gbemu
                             GPU.once_per_hblank();
                             if (line == 0)
                             {
+                                gpio.framecount++;
+                                gpio.update_time();
                                 gpustate = GPUState.VISIBLE;
                                 //GPU.next_line(line);
                                 GBRegs.Sect_display.DISPSTAT_V_Blank_flag.write(0);

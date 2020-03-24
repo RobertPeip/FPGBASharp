@@ -44,7 +44,7 @@ namespace gbemu
             DMA.reset();
             SoundDMA.reset();
             BusTiming.reset();
-            gpio.rtcReset();
+            gpio.reset();
 
             //Serial.reset();
 
