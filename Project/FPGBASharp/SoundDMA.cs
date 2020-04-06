@@ -16,7 +16,8 @@ namespace gbemu
             public GBReg Reset_FIFO;
 
             public byte timerindex;
-            public List<byte> fifo;
+            public List<UInt32> fifo;
+            public List<byte> playfifo;
             public bool any_on;
 
             public List<byte> outfifo;
@@ -30,7 +31,8 @@ namespace gbemu
                 this.Reset_FIFO = Reset_FIFO;
 
                 timerindex = 0;
-                fifo = new List<byte>();
+                fifo = new List<UInt32>();
+                playfifo = new List<byte>();
                 any_on = false;
 
                 outfifo = new List<byte>();
@@ -44,9 +46,9 @@ namespace gbemu
                 while (tickcount >= Sound.SAMPLERATE)
                 {
                     tickcount -= Sound.SAMPLERATE;
-                    if (fifo.Count > 0 && outfifo.Count < 15000)
+                    if (playfifo.Count > 0 && outfifo.Count < 15000)
                     {
-                        outfifo.Add(fifo[0]);
+                        outfifo.Add(playfifo[0]);
                     }
                 }
             }
@@ -68,22 +70,39 @@ namespace gbemu
         public static void timer_overflow(uint timerindex)
         {
             CPU.newticks = 0;
+            bool request = false;
             for (uint i = 0; i < 2; i++)
             {
                 if (soundDMAs[i].any_on && soundDMAs[i].timerindex == timerindex)
                 {
-                    if (soundDMAs[i].fifo.Count > 0)
+                    if (soundDMAs[i].fifo.Count <= 3)
                     {
-                        soundDMAs[i].fifo.RemoveAt(0);
+                        request |= DMA.request_audio(i);
                     }
 
-                    if (soundDMAs[i].fifo.Count == 16 || soundDMAs[i].fifo.Count == 0)
+                    if (soundDMAs[i].playfifo.Count > 0)
                     {
-                        DMA.request_audio(i);
-                        DMA.work();
-                        DMA.delayed = true;
+                        soundDMAs[i].playfifo.RemoveAt(0);
+                    }
+                    if (soundDMAs[i].playfifo.Count == 0)
+                    {
+                        UInt32 value = 0;
+                        if (soundDMAs[i].fifo.Count > 0)
+                        {
+                            value = soundDMAs[i].fifo[0];
+                            soundDMAs[i].fifo.RemoveAt(0);
+                            soundDMAs[i].playfifo.Add((byte)value);
+                            soundDMAs[i].playfifo.Add((byte)(value >> 8));
+                            soundDMAs[i].playfifo.Add((byte)(value >> 16));
+                            soundDMAs[i].playfifo.Add((byte)(value >> 24));
+                        }
                     }
                 }
+            }
+            if (request)
+            {
+                DMA.work();
+                DMA.delayed = true;
             }
         }
 
@@ -116,13 +135,8 @@ namespace gbemu
 
         public static void fill_fifo(int index, UInt32 value, bool dwaccess)
         {
-            soundDMAs[index].fifo.Add((byte)value);
-            soundDMAs[index].fifo.Add((byte)(value >> 8));
-            if (dwaccess)
-            {
-                soundDMAs[index].fifo.Add((byte)(value >> 16));
-                soundDMAs[index].fifo.Add((byte)(value >> 24));
-            }
+            // real hardware does also clear fifo when writing 8th dword
+            soundDMAs[index].fifo.Add(value);
         }
     }
 }

@@ -403,7 +403,7 @@ namespace gbemu
             new_vblank = false;
         }
 
-        public static void request_audio(uint audioindex)
+        public static bool request_audio(uint audioindex)
         {
             for (int i = 1; i < 3; i++)
             {
@@ -416,9 +416,11 @@ namespace gbemu
                         DMAs[i].totalTicks = 0;
                         DMAs[i].fullcount = DMAs[i].count;
                         DMAs[i].skipdebugout = true;
+                        return true;
                     }
                 }
             }
+            return false;
         }
     }
 }
