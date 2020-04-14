@@ -1370,8 +1370,8 @@ namespace gbemu
                 int yyy;
                 if (wrapping)
                 {
-                    xxx = (realX >> 8) % scroll_x_mod;
-                    yyy = (realY >> 8) % scroll_y_mod;
+                    xxx = (realX >> 8) & (scroll_x_mod - 1);
+                    yyy = (realY >> 8) & (scroll_y_mod - 1);
                 }
                 else
                 {
@@ -1458,8 +1458,8 @@ namespace gbemu
                 int yyy;
                 if (wrapping)
                 {
-                    xxx = (realX >> 8) % scroll_x_mod;
-                    yyy = (realY >> 8) % scroll_y_mod;
+                    xxx = (realX >> 8) & (scroll_x_mod - 1);
+                    yyy = (realY >> 8) & (scroll_y_mod - 1);
                 }
                 else
                 {
